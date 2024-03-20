@@ -172,6 +172,13 @@ class NetSchoolAPI:
             )
         ).content)
 
+    async def get_assignment_details(self, assignment_id: int, requests_timeout: int = None) -> Dict:
+        requester = self._wrapped_client.make_requester(requests_timeout)
+        response = await requester(self._wrapped_client.client.build_request(
+            method="GET", url=f'student/diary/assigns/{assignment_id}'
+        ))
+        return response.json()
+
     async def diary(
         self,
         start: Optional[date] = None,
@@ -197,9 +204,21 @@ class NetSchoolAPI:
                 },
             )
         )
+        diary_data = response.json()
+        all_assignment_details = []
+        
+        for day in diary_data['weekDays']:
+            for lesson in day.get('lessons', []):
+                for assignment in lesson.get('assignments', []):
+                    assignment_id = assignment['id']
+                    assignment_details = await self.get_assignment_details(assignment_id, requests_timeout)
+                    #all_assignment_details.append(assignment_details)
+                    assignment['descript'] = assignment_details['description']
+                    assignment['attach'] = assignment_details['attachments']
+
         diary_schema = schemas.DiarySchema()
         diary_schema.context['assignment_types'] = self._assignment_types
-        diary = diary_schema.load(response.json())
+        diary = diary_schema.load(diary_data)
         return diary  # type: ignore
 
     async def overdue(

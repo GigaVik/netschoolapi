@@ -45,6 +45,12 @@ class Assignment(NetSchoolAPISchema):
     comment: str
     type: str
     content: str = field(metadata=dict(data_key='assignmentName'))
+    descript: str = field(metadata=dict(
+        missing='', allow_none=True, required=False, data_key='descript'
+    ))
+#    attach: str = field(metadata=dict(
+#        missing='', allow_none=True, required=False, data_key='attach'
+#    ))
     mark: int = field(metadata=dict(allow_none=True, data_key='mark'))
     is_duty: bool = field(metadata=dict(data_key='dutyMark'))
     deadline: datetime.date = field(metadata=dict(data_key='dueDate'))
